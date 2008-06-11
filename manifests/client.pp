@@ -18,10 +18,6 @@ class iscsi::client::base {
                      Package[iscsi-initiator-utils] ],
     }
 
-    Service[iscsi]{
-        before => Service[iscsid],
-    }
-
     # these files make some udev rules to match the
     # iscsi luns to /dev/iscsi_*
     file{"/etc/udev/rules.d/10_persistant_scsi.rules":
@@ -62,8 +58,9 @@ InitiatorAlias=$hostname
                             }
 
                             exec{'refresh_iscsi_connections':
-                                command => "/sbin/iscsiadm -m node -T $iscsi_target_targetname -p ${iscsi_target_ip}:3207 -U ; iscsiadm -m discovery -t sendtargets -p ${iscsi_target_ip} && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.authmethod -v CHAP && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username_in -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password -v $iscsi_initiator_pwd &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password_in -v $iscsi_target_pwd /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -L all",
-                                before => [ Service[iscsi], Service[iscsid] ],
+                                command => "/sbin/iscsiadm -m node -T $iscsi_target_targetname -p ${iscsi_target_ip}:3207 -U all; /sbin/iscsiadm -m discovery -t sendtargets -p ${iscsi_target_ip} && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.authmethod -v CHAP && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username_in -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password -v $iscsi_target_pwd &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password_in -v $iscsi_initiator_pwd /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -L all",
+                                before => Service[iscsi],
+                                require => Service[iscsid],
                                 refreshonly => true,
                             }
                         }
