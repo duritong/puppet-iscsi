@@ -29,7 +29,7 @@ class iscsi::client::base {
     file{"/lib/udev/getlun.sh":
         source => "puppet://$server/iscsi/udev/getlun.sh",
         require => Package[iscsi-initiator-utils],
-        owner => root, group => 0, modei => 0744;
+        owner => root, group => 0, mode => 0744;
     }
 
     case $iscsi_initiatorname {
