@@ -18,6 +18,10 @@ class iscsi::client::base {
                      Package[iscsi-initiator-utils] ],
     }
 
+    Service[iscsi]{
+        before => Service[iscsid],
+    }
+
     # these files make some udev rules to match the
     # iscsi luns to /dev/iscsi_*
     file{"/etc/udev/rules.d/10_persistant_scsi.rules":
@@ -37,9 +41,10 @@ class iscsi::client::base {
         default: {
             file{'/etc/iscsi/initiatorname.iscsi':
                 content => "InitiatorName=$iscsi_initiatorname
-InitiatorAlias=$hostname",
+InitiatorAlias=$hostname
+",
                 require => Package['iscsi-initiator-utils'],
-                notify => [ Service['iscsi'], Service['iscsid'] ],
+                notify => [ Service['iscsi'], Service['iscsid'], Exec['refresh_iscsi_connections'] ],
                 owner => root, group => 0, mode => 0644;
             }
 
@@ -58,6 +63,7 @@ InitiatorAlias=$hostname",
 
                             exec{'refresh_iscsi_connections':
                                 command => "iscsiadm -m node -T $iscsi_target_targetname -p ${iscsi_target_ip}:3207 -U && iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.authmethod -v CHAP && iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username -v $iscsi_initiatorname &&  iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username_in -v $iscsi_initiatorname &&  iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password -v $iscsi_initiator_pwd &&  iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password_in -v $iscsi_target_pwd iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -L all",
+                                before => [ Service[iscsi], Service[iscsid] ],
                                 refreshonly => true,
                             }
                         }
