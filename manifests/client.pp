@@ -36,7 +36,8 @@ class iscsi::client::base {
         '': { fail('You have to specifiy $iscsi_initiatorname for this host!') }
         default: {
             file{'/etc/iscsi/initiatorname.iscsi':
-                content => "InitiatorName=$iscsi_initiatorname",
+                content => "InitiatorName=$iscsi_initiatorname
+InitiatorAlias=$hostname",
                 require => Package['iscsi-initiator-utils'],
                 notify => [ Service['iscsi'], Service['iscsid'] ],
                 owner => root, group => 0, mode => 0644;
