@@ -9,12 +9,20 @@ class iscsi::client::base {
         ensure => present,
     }
 
-    service{['iscsi', 'iscsid']:
+    service{'iscsi':
         ensure => running,
         enable => true,
         hasstatus => true,
         require => [ File['/etc/udev/rules.d/10_persistant_scsi.rules'], 
                      File['/lib/udev/getlun.sh'], 
+                     Package[iscsi-initiator-utils] ],
+    }
+
+    exec{'refresh_iscsid':
+        command => '/etc/init.d/iscsid stop; /etc/init.d/iscsid start',
+        refreshonly => true,
+        require => [ File['/etc/udev/rules.d/10_persistant_scsi.rules'],
+                     File['/lib/udev/getlun.sh'],
                      Package[iscsi-initiator-utils] ],
     }
 
@@ -40,7 +48,7 @@ class iscsi::client::base {
 InitiatorAlias=$hostname
 ",
                 require => Package['iscsi-initiator-utils'],
-                notify => [ Service['iscsi'], Service['iscsid'], Exec['refresh_iscsi_connections'] ],
+                notify => [ Service['iscsi'], Exec['refresh_iscsid'], Exec['refresh_iscsi_connections'] ],
                 owner => root, group => 0, mode => 0644;
             }
 
@@ -53,14 +61,14 @@ InitiatorAlias=$hostname
                             file{'/etc/iscsi/iscsid.conf':
                                 content => template('iscsi/config/iscsid.conf.erb'),
                                 require => Package['iscsi-initiator-utils'],
-                                notify => [ Exec['refresh_iscsi_connections'], Service['iscsi'], Service['iscsid'] ],
+                                notify => [ Exec['refresh_iscsi_connections'], Service['iscsi'], Exec['refresh_iscsid'] ],
                                 owner => root, group => 0, mode => 0600;
                             }
 
                             exec{'refresh_iscsi_connections':
-                                command => "/sbin/iscsiadm -m node -T $iscsi_target_targetname -p ${iscsi_target_ip}:3207 -U all; /sbin/iscsiadm -m discovery -t sendtargets -p ${iscsi_target_ip} && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.authmethod -v CHAP && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username_in -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password -v $iscsi_target_pwd &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password_in -v $iscsi_initiator_pwd /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -L all && iscsiadm -m session -R",
+                                command => "/sbin/iscsiadm -m node -T $iscsi_target_targetname -p ${iscsi_target_ip}:3207 -U all; /sbin/iscsiadm -m discovery -t sendtargets -p ${iscsi_target_ip} && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.authmethod -v CHAP && /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.username_in -v $iscsi_initiatorname &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password -v $iscsi_target_pwd &&  /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -o update -n node.session.auth.password_in -v $iscsi_initiator_pwd /sbin/iscsiadm -m node -T $iscsi_target_targetname -p $iscsi_target_ip -L all && /sbin/iscsiadm -m session -R",
                                 before => Service[iscsi],
-                                require => Service[iscsid],
+                                require => Exec['refresh_iscsid'],
                                 refreshonly => true,
                             }
                         }
