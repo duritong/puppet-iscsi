@@ -66,28 +66,27 @@ node.session.auth.password_in = <%= iscsi_initiator_pwd %>
 # before failing SCSI commands back to the application when running
 # the Linux SCSI Layer error handler, edit the line.
 # The value is in seconds and the default is 120 seconds.
-node.session.timeo.replacement_timeout = 120
+node.session.timeo.replacement_timeout = <%= session-timeo-replacement_timeout ||= 120 %>
 
 # To specify the time to wait for login to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.login_timeout = 15
+node.conn[0].timeo.login_timeout = <%= conn0-timeo-login_timeout ||= 15 %>
 
 # To specify the time to wait for logout to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.logout_timeout = 15
+node.conn[0].timeo.logout_timeout = <%= conn0_timeo.logout_timeout ||= 15 %>
 
 # To specify the intervale to send iSCSI Nop-outs as pings
 # to the target edit this the line.
 # The value is in seconds and the default is 10 seconds.
-node.conn[0].timeo.noop_out_interval = 10
+node.conn[0].timeo.noop_out_interval = <%=conn0-timeo-noop_out_interval ||= 10 %>
 
 # To specify the time to wait for a Nop-out response before failing
 # the connection, edit this line. Failing the connection will
 # cause IO to be failed back to the SCSI layer. If using dm-multipath
 # this will cause the IO to be failed to the multipath layer.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.noop_out_timeout = 15
-
+node.conn[0].timeo.noop_out_timeout = <%= conn0-timeo-noop_out_timeout ||= 10 %>
 
 #******
 # Retry
