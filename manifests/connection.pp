@@ -32,7 +32,7 @@ define iscsi::connection(
         owner => root, group => 0, mode => 0644;
     }
     file{'/etc/iscsi/iscsid.conf':
-        content => template('iscsi/config/iscsid.conf.erb'),
+        content => template('iscsi/iscsid.conf.erb'),
         require => Package['iscsi-initiator-utils'],
         notify => [
             Service['iscsi'], 
