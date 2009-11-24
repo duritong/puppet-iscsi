@@ -41,13 +41,13 @@ define iscsi::connection(
         ],
         owner => root, group => 0, mode => 0600;
     }
-    exec{'refresh_iscsi_connections':
-        command => "/usr/local/sbin/refresh_iscsi_connections.sh '$iscsi_initiator_name' '$iscsi_initiator_pwd' '$iscsi_target_name' '$iscsi_target_ip' '$iscsi_target_pwd'",
-        before => [
-            Service[iscsi],
-            Service[iscsid],
-        ],
-        require => File['/usr/local/sbin/refresh_iscsi_connections.sh'],
-        refreshonly => true,
-    }
+#    exec{'refresh_iscsi_connections':
+#        command => "/usr/local/sbin/refresh_iscsi_connections.sh '$iscsi_initiator_name' '$iscsi_initiator_pwd' '$iscsi_target_ip' '$iscsi_target_name' '$iscsi_target_pwd'",
+#        before => [
+#            Service[iscsi],
+#            Service[iscsid],
+#        ],
+#        require => File['/usr/local/sbin/refresh_iscsi_connections.sh'],
+#        refreshonly => true,
+#    }
 }
