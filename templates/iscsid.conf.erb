@@ -33,12 +33,12 @@ node.session.auth.authmethod = CHAP
 
 # To set a CHAP username and password for initiator
 # authentication by the target(s), uncomment the following lines:
-node.session.auth.username = <%= iscsi_initiatorname %>
+node.session.auth.username = <%= iscsi_initiator_name %>
 node.session.auth.password = <%= iscsi_target_pwd %>
 
 # To set a CHAP username and password for target(s)
 # authentication by the initiator, uncomment the following lines:
-node.session.auth.username_in = <%= iscsi_initiatorname %>
+node.session.auth.username_in = <%= iscsi_initiator_name %>
 node.session.auth.password_in = <%= iscsi_initiator_pwd %> 
 
 # To enable CHAP authentication for a discovery session to the target
