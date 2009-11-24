@@ -1,6 +1,6 @@
 #!/bin/bash
 
-test $# -lt 6 && exit 1
+test $# -lt 5 && exit 1
 
 iscsi_initiatorname = "$1"
 iscsi_initiator_pwd = "$2"
