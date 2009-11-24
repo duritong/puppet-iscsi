@@ -27,7 +27,7 @@ define iscsi::connection(
         notify => [
             Service['iscsi'], 
             Service['iscsid'], 
-            Exec['refresh_iscsi_connections'],
+            #Exec['refresh_iscsi_connections'],
         ],
         owner => root, group => 0, mode => 0644;
     }
@@ -37,7 +37,7 @@ define iscsi::connection(
         notify => [
             Service['iscsi'], 
             Service['iscsid'], 
-            Exec['refresh_iscsi_connections'], 
+            #Exec['refresh_iscsi_connections'], 
         ],
         owner => root, group => 0, mode => 0600;
     }
