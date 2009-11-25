@@ -25,9 +25,9 @@ define iscsi::connection(
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package[iscsi-initiator-utils],
         notify => [
-            Service[iscsi], 
+            Exec[restart_iscsi_before_discovery],
             Exec[discover_targets],
-            Exec[restart_iscsi_after_discovery],
+            Service[iscsi], 
         ],
         owner => root, group => 0, mode => 0644;
     }
@@ -35,20 +35,20 @@ define iscsi::connection(
         content => template('iscsi/iscsid.conf.erb'),
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Service[iscsi], 
+            Exec[restart_iscsi_before_discovery],
             Exec[discover_targets],
-            Exec[restart_iscsi_after_discovery],
+            Service[iscsi], 
         ],
         owner => root, group => 0, mode => 0600;
     }
+    exec{'restart_iscsi_before_discovery':
+        refreshonly => true,
+        before => Exec[discover_targets],
+        command => "/etc/init.d/iscsi restart; /bin/true",
+    }
     exec{'discover_targets':
         refreshonly => true,
-        require => Service[iscsi],
+        before => Service[iscsi],
         command => "/sbin/iscsiadm -m discovery -t sendtargets -p '$iscsi_target_ip'",
-    }
-    exec{'restart_iscsi_after_discovery':
-        refreshonly => true,
-        require => Exec[discover_targets],
-        command => "/etc/init.d/iscsi restart",
     }
 }
