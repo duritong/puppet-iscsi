@@ -23,11 +23,11 @@ define iscsi::connection(
 
     file{'/etc/iscsi/initiatorname.iscsi':
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
-        require => Package['iscsi-initiator-utils'],
+        require => Package[iscsi-initiator-utils],
         notify => [
-            Service['iscsi'], 
-            Service['iscsid'], 
-            #Exec['refresh_iscsi_connections'],
+            Service[iscsi], 
+            Exec[discover_targets],
+            Exec[restart_iscsi_after_discovery],
         ],
         owner => root, group => 0, mode => 0644;
     }
@@ -35,19 +35,20 @@ define iscsi::connection(
         content => template('iscsi/iscsid.conf.erb'),
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Service['iscsi'], 
-            Service['iscsid'], 
-            #Exec['refresh_iscsi_connections'], 
+            Service[iscsi], 
+            Exec[discover_targets],
+            Exec[restart_iscsi_after_discovery],
         ],
         owner => root, group => 0, mode => 0600;
     }
-#    exec{'refresh_iscsi_connections':
-#        command => "/usr/local/sbin/refresh_iscsi_connections.sh '$iscsi_initiator_name' '$iscsi_initiator_pwd' '$iscsi_target_ip' '$iscsi_target_name' '$iscsi_target_pwd'",
-#        before => [
-#            Service[iscsi],
-#            Service[iscsid],
-#        ],
-#        require => File['/usr/local/sbin/refresh_iscsi_connections.sh'],
-#        refreshonly => true,
-#    }
+    exec{'discover_targets':
+        refreshonly => true,
+        require => Service[iscsi],
+        command => "/sbin/iscsiadm -m discovery -t sendtargets -p '$iscsi_target_ip'",
+    }
+    exec{'restart_iscsi_after_discovery':
+        refreshonly => true,
+        require => Exec[discover_targets],
+        command => "/etc/init.d/iscsi restart",
+    }
 }

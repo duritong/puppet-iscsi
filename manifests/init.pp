@@ -38,9 +38,4 @@ class iscsi {
     file{"/etc/udev/rules.d/10_persistant_scsi.rules":
         source => "puppet://$server/iscsi/10_persistant_scsi.rules",
         owner => root, group => 0, mode => 0644;
-    }
-    file{'/usr/local/sbin/refresh_iscsi_connections.sh':
-        source => "puppet://$server/iscsi/refresh_iscsi_connections.sh",
-        owner => root, group => 0, mode => 0755;
-    }
 }
