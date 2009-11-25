@@ -7,6 +7,13 @@
 # and man page for iscsiadm for details on the --op command.
 #
 
+################
+# iSNS settings
+################
+# Address of iSNS server
+#isns.address = 192.168.0.1
+#isns.port = 3205
+
 #############################
 # NIC/HBA and driver settings
 #############################
@@ -39,7 +46,7 @@ node.session.auth.password = <%= iscsi_target_pwd %>
 # To set a CHAP username and password for target(s)
 # authentication by the initiator, uncomment the following lines:
 node.session.auth.username_in = <%= iscsi_initiator_name %>
-node.session.auth.password_in = <%= iscsi_initiator_pwd %> 
+node.session.auth.password_in = <%= iscsi_initiator_pwd %>
 
 # To enable CHAP authentication for a discovery session to the target
 # set discovery.sendtargets.auth.authmethod to CHAP. The default is None.
@@ -76,30 +83,55 @@ node.conn[0].timeo.login_timeout = <%= conn0_timeo_login_timeout ||= 15 %>
 # The value is in seconds and the default is 15 seconds.
 node.conn[0].timeo.logout_timeout = <%= conn0_timeo_logout_timeout ||= 15 %>
 
-# To specify the intervale to send iSCSI Nop-outs as pings
-# to the target edit this the line.
-# The value is in seconds and the default is 10 seconds.
-node.conn[0].timeo.noop_out_interval = <%=conn0_timeo_noop_out_interval ||= 10 %>
+# Time interval to wait for on connection before sending a ping.
+node.conn[0].timeo.noop_out_interval = <%= conn0_timeo_noop_out_interval ||= 5 %>
 
 # To specify the time to wait for a Nop-out response before failing
 # the connection, edit this line. Failing the connection will
 # cause IO to be failed back to the SCSI layer. If using dm-multipath
 # this will cause the IO to be failed to the multipath layer.
+node.conn[0].timeo.noop_out_timeout = <%= conn0_timeo_noop_out_timeout ||= 5 %>
+
+# To specify the time to wait for abort response before
+# failing the operation and trying a logical unit reset edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.noop_out_timeout = <%= conn0_timeo_noop_out_timeout ||= 10 %>
+node.session.err_timeo.abort_timeout = <%= session_err_timeo_abort_timeout ||= 15 %>
+
+# To specify the time to wait for a logical unit response
+# before failing the operation and trying session re-establishment
+# edit the line.
+# The value is in seconds and the default is 30 seconds.
+node.session.err_timeo.lu_reset_timeout = <%= session_err_timeo_lu_reset_timeout ||= 20 %>
 
 #******
 # Retry
 #******
 
-# To speficy the number of times iscsiadm should retry a login
-# to the target when we first login, modify the following line.
-# The default is 4. Valid values are any integer value. This only
+# To specify the number of times iscsid should retry a login
+# if the login attempt fails due to the node.conn[0].timeo.login_timeout
+# expiring modify the following line. Note that if the login fails
+# quickly (before node.conn[0].timeo.login_timeout fires) because the network
+# layer or the target returns an error, iscsid may retry the login more than
+# node.session.initial_login_retry_max times.
+#
+# This retry count along with node.conn[0].timeo.login_timeout
+# determines the maximum amount of time iscsid will try to
+# establish the initial login. node.session.initial_login_retry_max is
+# multiplied by the node.conn[0].timeo.login_timeout to determine the
+# maximum amount.
+#
+# The default node.session.initial_login_retry_max is 8 and
+# node.conn[0].timeo.login_timeout is 15 so we have:
+#
+# node.conn[0].timeo.login_timeout * node.session.initial_login_retry_max =
+#								120 seconds
+#
+# Valid values are any integer value. This only
 # affects the initial login. Setting it to a high value can slow
 # down the iscsi service startup. Setting it to a low value can
 # cause a session to not get logged into, if there are distuptions
 # during startup or if the network is not ready at that time.
-node.session.initial_login_retry_max = 4
+node.session.initial_login_retry_max = 8
 
 ################################
 # session and device queue depth
@@ -111,7 +143,7 @@ node.session.initial_login_retry_max = 4
 node.session.cmds_max = 128
 
 # To control the device's queue depth set node.session.queue_depth
-# to a value between 1 and 128. The default is 128.
+# to a value between 1 and 1024. The default is 32.
 node.session.queue_depth = 32
 
 #***************
@@ -159,9 +191,8 @@ node.session.iscsi.MaxBurstLength = 16776192
 # in an iSCSI PDU from a target, edit the following line.
 #
 # The value is the number of bytes in the range of 512 to (2^24-1) and
-# the default is 131072
-node.conn[0].iscsi.MaxRecvDataSegmentLength = 131072
-
+# the default is 262144
+node.conn[0].iscsi.MaxRecvDataSegmentLength = 262144
 
 # To specify the maximum number of data bytes the initiator can receive
 # in an iSCSI PDU from a target during a discovery session, edit the
@@ -173,7 +204,7 @@ node.conn[0].iscsi.MaxRecvDataSegmentLength = 131072
 discovery.sendtargets.iscsi.MaxRecvDataSegmentLength = 32768
 
 # To allow the targets to control the setting of the digest checking,
-# with the initiator requesting a preference of enabling the checking, uncommen
+# with the initiator requesting a preference of enabling the checking, uncomment
 # the following lines (Data digests are not supported and on ppc/ppc64
 # both header and data digests are not supported.):
 #node.conn[0].iscsi.HeaderDigest = CRC32C,None
@@ -191,9 +222,9 @@ discovery.sendtargets.iscsi.MaxRecvDataSegmentLength = 32768
 # iSCSI PDUs, uncomment the following lines:
 #node.conn[0].iscsi.HeaderDigest = None
 #
-# The default is to never use DataDigests and to allow the target to control
-# the setting of the HeaderDigest checking with the initiator requesting
-# a preference of disabling the checking.
+# The default is to never use DataDigests or HeaderDigests.
+#
+node.conn[0].iscsi.HeaderDigest = None
 
 #************
 # Workarounds
@@ -202,13 +233,10 @@ discovery.sendtargets.iscsi.MaxRecvDataSegmentLength = 32768
 # Some targets like IET prefer after an initiator has sent a task
 # management function like an ABORT TASK or LOGICAL UNIT RESET, that
 # it does not respond to PDUs like R2Ts. To enable this behavior uncomment
-# the following line (The default behavior is No):
-# node.session.iscsi.FastAbort = Yes
+# the following line (The default behavior is Yes):
+node.session.iscsi.FastAbort = Yes
 
 # Some targets like Equalogic prefer that after an initiator has sent
 # a task management function like an ABORT TASK or LOGICAL UNIT RESET, that
-# it continue to respond to R2Ts. To enable this uncomment this line (This
-# is the default behavior):
-node.session.iscsi.FastAbort = No
-
-node.conn[0].startup = automatic
+# it continue to respond to R2Ts. To enable this uncomment this line
+# node.session.iscsi.FastAbort = No
