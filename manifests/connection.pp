@@ -46,9 +46,9 @@ define iscsi::connection(
         require => Service[iscsi],
         command => "/sbin/iscsiadm -m discovery -t sendtargets -p '$iscsi_target_ip'",
     }
-}
     exec{'restart_iscsi_after_discovery':
         refreshonly => true,
         require => Exec[discover_targets],
         command => "/etc/init.d/iscsi restart",
     }
+}
