@@ -73,7 +73,7 @@ node.session.auth.password_in = <%= iscsi_initiator_pwd %>
 # before failing SCSI commands back to the application when running
 # the Linux SCSI Layer error handler, edit the line.
 # The value is in seconds and the default is 120 seconds.
-node.session.timeo.replacement_timeout = <%= self.respond_to?(:session_timeo_replacement_timeout) ? self.send(:session_timeo_replacement_timeout) : 130 %>
+node.session.timeo.replacement_timeout = <%= if session_timeo_replacement_timeout then session_timeo_replacement_timeout else 130 end %>
 
 # To specify the time to wait for login to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
