@@ -29,7 +29,10 @@ define iscsi::connection(
         $iscsi_login_timeout = 15
     }
     if ! $iscsi_logout_timeout {
-        $iscsi_noop_out_interval = 15
+        $iscsi_logout_timeout = 15
+    }
+    if ! $iscsi_noop_out_interval {
+        $iscsi_noop_out_interval = 5
     }
     if ! $iscsi_noop_out_timeout {
         $iscsi_noop_out_timeout = 5
@@ -38,7 +41,7 @@ define iscsi::connection(
         $iscsi_abort_timeout = 15
     }
     if ! $iscsi_reset_timeout {
-        $iscsi_reset_timeout = 30
+        $iscsi_reset_timeout = 20
     }
 
     file{'/etc/iscsi/initiatorname.iscsi':
