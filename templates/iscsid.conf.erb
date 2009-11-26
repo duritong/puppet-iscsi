@@ -73,35 +73,35 @@ node.session.auth.password_in = <%= iscsi_initiator_pwd %>
 # before failing SCSI commands back to the application when running
 # the Linux SCSI Layer error handler, edit the line.
 # The value is in seconds and the default is 120 seconds.
-node.session.timeo.replacement_timeout = <%= if session_timeo_replacement_timeout then session_timeo_replacement_timeout else 130 end %>
+node.session.timeo.replacement_timeout = <%= iscsi_replacement_timeout %>
 
 # To specify the time to wait for login to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.login_timeout = <%= conn0_timeo_login_timeout ||= 15 %>
+node.conn[0].timeo.login_timeout = <%= iscsi_login_timeout %>
 
 # To specify the time to wait for logout to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.logout_timeout = <%= conn0_timeo_logout_timeout ||= 15 %>
+node.conn[0].timeo.logout_timeout = <%= iscsi_logout_timeout %>
 
 # Time interval to wait for on connection before sending a ping.
-node.conn[0].timeo.noop_out_interval = <%= conn0_timeo_noop_out_interval ||= 5 %>
+node.conn[0].timeo.noop_out_interval = <%= iscsi_noop_out_interval %>
 
 # To specify the time to wait for a Nop-out response before failing
 # the connection, edit this line. Failing the connection will
 # cause IO to be failed back to the SCSI layer. If using dm-multipath
 # this will cause the IO to be failed to the multipath layer.
-node.conn[0].timeo.noop_out_timeout = <%= conn0_timeo_noop_out_timeout ||= 5 %>
+node.conn[0].timeo.noop_out_timeout = <%= iscsi_noop_out_timeout %>
 
 # To specify the time to wait for abort response before
 # failing the operation and trying a logical unit reset edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.session.err_timeo.abort_timeout = <%= session_err_timeo_abort_timeout ||= 15 %>
+node.session.err_timeo.abort_timeout = <%= iscsi_abort_timeout %>
 
 # To specify the time to wait for a logical unit response
 # before failing the operation and trying session re-establishment
 # edit the line.
 # The value is in seconds and the default is 30 seconds.
-node.session.err_timeo.lu_reset_timeout = <%= session_err_timeo_lu_reset_timeout ||= 20 %>
+node.session.err_timeo.lu_reset_timeout = <%= iscsi_reset_timeout %>
 
 #******
 # Retry

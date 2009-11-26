@@ -21,6 +21,26 @@ define iscsi::connection(
         fail('You must specify $iscsi_target_pwd!')
     }
 
+    # connection timeouts
+    if ! $iscsi_replacement_timeout {
+        $iscsi_replacement_timeout = 120
+    }
+    if ! $iscsi_login_timeout {
+        $iscsi_login_timeout = 15
+    }
+    if ! $iscsi_logout_timeout {
+        $iscsi_noop_out_interval = 15
+    }
+    if ! $iscsi_noop_out_timeout {
+        $iscsi_noop_out_timeout = 5
+    }
+    if ! $iscsi_abort_timeout {
+        $iscsi_abort_timeout = 15
+    }
+    if ! $iscsi_reset_timeout {
+        $iscsi_reset_timeout = 30
+    }
+
     file{'/etc/iscsi/initiatorname.iscsi':
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package[iscsi-initiator-utils],
