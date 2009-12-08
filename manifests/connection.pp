@@ -3,7 +3,10 @@ define iscsi::connection(
     $iscsi_initiator_pwd,
     $iscsi_target_name,
     $iscsi_target_ip,
-    $iscsi_target_pwd
+    $iscsi_target_pwd,
+    $iscsi_replacement_timeout,
+    $iscsi_noop_out_interval,
+    $iscsi_noop_out_timeout
 ){
     if ! $iscsi_initiator_name {
         fail('You must specifiy $iscsi_initiator_name!')
@@ -21,15 +24,12 @@ define iscsi::connection(
         fail('You must specify $iscsi_target_pwd!')
     }
 
-    # connection timeouts
+    # For now, we only implement those parameters we need to, hashes would 
+    # be much more appropriate for such a case, so we wait until they are 
+    # available in puppet.
+
     if ! $iscsi_replacement_timeout {
         $iscsi_replacement_timeout = 120
-    }
-    if ! $iscsi_login_timeout {
-        $iscsi_login_timeout = 15
-    }
-    if ! $iscsi_logout_timeout {
-        $iscsi_logout_timeout = 15
     }
     if ! $iscsi_noop_out_interval {
         $iscsi_noop_out_interval = 5
@@ -37,20 +37,16 @@ define iscsi::connection(
     if ! $iscsi_noop_out_timeout {
         $iscsi_noop_out_timeout = 5
     }
-    if ! $iscsi_abort_timeout {
-        $iscsi_abort_timeout = 15
-    }
-    if ! $iscsi_reset_timeout {
-        $iscsi_reset_timeout = 20
-    }
 
     file{'/etc/iscsi/initiatorname.iscsi':
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package[iscsi-initiator-utils],
         notify => [
-            Exec[restart_iscsi_before_discovery],
-            Exec[discover_targets],
-            Service[iscsi], 
+            Exec[update_iscsi_replacement_timeout],
+            Exec[update_iscsi_noop_out_interval],
+            Exec[update_iscsi_noop_out_timeout],
+            Exec[restart_iscsi_daemon_before_discovery],
+            Exec[discover_iscsi_targets],
         ],
         owner => root, group => 0, mode => 0644;
     }
@@ -58,20 +54,39 @@ define iscsi::connection(
         content => template('iscsi/iscsid.conf.erb'),
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Exec[restart_iscsi_before_discovery],
-            Exec[discover_targets],
-            Service[iscsi], 
+            Exec[update_iscsi_replacement_timeout],
+            Exec[update_iscsi_noop_out_interval],
+            Exec[update_iscsi_noop_out_timeout],
+            Exec[restart_iscsi_daemon_before_discovery],
+            Exec[discover_iscsi_targets],
         ],
         owner => root, group => 0, mode => 0600;
     }
-    exec{'restart_iscsi_before_discovery':
+    exec{'restart_iscsi_daemon_before_discovery':
         refreshonly => true,
-        before => Exec[discover_targets],
+        before => Exec[discover_iscsi_targets],
+        onlyif => "test `ls -1 /dev/iscsi* | wc -l` -eq 0",
         command => "/etc/init.d/iscsi restart; /bin/true",
     }
-    exec{'discover_targets':
+    exec{'discover_iscsi_targets':
         refreshonly => true,
-        before => Service[iscsi],
-        command => "/sbin/iscsiadm -m discovery -t sendtargets -p '$iscsi_target_ip'",
+        notify => Service[iscsi],
+        onlyif => "test `ls -1 /dev/iscsi* | wc -l` -eq 0",
+        command => "/sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
+    }
+    exec{'update_iscsi_replacement_timeout':
+        refreshonly => true,
+        command => "iscsiadm -m node -T $iscsi_target_name -o update -n node.session.timeo.replacement_timeout -v $iscsi_replacement_timeout",
+
+    }
+    exec{'update_iscsi_noop_out_interval':
+        refreshonly => true,
+        command => "iscsiadm -m node -T $iscsi_target_name -o update -n node.conn[0].timeo.noop_out_interval -v $iscsi_noop_out_interval",
+
+    }
+    exec{'update_iscsi_noop_out_timeout':
+        refreshonly => true,
+        command => "iscsiadm -m node -T $iscsi_target_name -o update -n node.conn[0].timeo.noop_out_timeout -v $iscsi_noop_out_timeout",
+
     }
 }
