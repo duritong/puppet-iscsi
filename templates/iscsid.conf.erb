@@ -77,11 +77,11 @@ node.session.timeo.replacement_timeout = <%= iscsi_replacement_timeout %>
 
 # To specify the time to wait for login to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.login_timeout = <%= iscsi_login_timeout %>
+node.conn[0].timeo.login_timeout = 15
 
 # To specify the time to wait for logout to complete, edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.conn[0].timeo.logout_timeout = <%= iscsi_logout_timeout %>
+node.conn[0].timeo.logout_timeout = 15
 
 # Time interval to wait for on connection before sending a ping.
 node.conn[0].timeo.noop_out_interval = <%= iscsi_noop_out_interval %>
@@ -95,13 +95,13 @@ node.conn[0].timeo.noop_out_timeout = <%= iscsi_noop_out_timeout %>
 # To specify the time to wait for abort response before
 # failing the operation and trying a logical unit reset edit the line.
 # The value is in seconds and the default is 15 seconds.
-node.session.err_timeo.abort_timeout = <%= iscsi_abort_timeout %>
+node.session.err_timeo.abort_timeout = 15
 
 # To specify the time to wait for a logical unit response
 # before failing the operation and trying session re-establishment
 # edit the line.
 # The value is in seconds and the default is 30 seconds.
-node.session.err_timeo.lu_reset_timeout = <%= iscsi_reset_timeout %>
+node.session.err_timeo.lu_reset_timeout = 20
 
 #******
 # Retry
