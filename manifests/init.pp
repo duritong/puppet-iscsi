@@ -45,4 +45,8 @@ class iscsi {
         source => "puppet://$server/iscsi/10_persistant_scsi.rules",
         owner => root, group => 0, mode => 0644;
     }
+    file{"/usr/local/sbin/update_iscsi_database.rb":
+        source => "puppet://$server/iscsi/update_iscsi_database.rb",
+        owner => root, group => 0, mode => 0755;
+    }
 }

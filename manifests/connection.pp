@@ -26,7 +26,8 @@ define iscsi::connection(
 
     # For now, we only implement those parameters we need to, hashes would 
     # be much more appropriate for such a case, so we wait until they are 
-    # available in puppet.
+    # available in puppet. Also, a much cleaner approach would be to move 
+    # those default values into the template. (<%= iscsi_replacement_timeout ||= 120 %>).
 
     if ! $iscsi_replacement_timeout {
         $iscsi_replacement_timeout = 120
@@ -42,9 +43,7 @@ define iscsi::connection(
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package[iscsi-initiator-utils],
         notify => [
-            Exec[update_iscsi_replacement_timeout],
-            Exec[update_iscsi_noop_out_interval],
-            Exec[update_iscsi_noop_out_timeout],
+            Exec[update_iscsi_database],
             Exec[restart_iscsi_daemon_before_discovery],
             Exec[discover_iscsi_targets],
         ],
@@ -54,9 +53,7 @@ define iscsi::connection(
         content => template('iscsi/iscsid.conf.erb'),
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Exec[update_iscsi_replacement_timeout],
-            Exec[update_iscsi_noop_out_interval],
-            Exec[update_iscsi_noop_out_timeout],
+            Exec[update_iscsi_database],
             Exec[restart_iscsi_daemon_before_discovery],
             Exec[discover_iscsi_targets],
         ],
@@ -74,19 +71,9 @@ define iscsi::connection(
         onlyif => "test `ls -1 /dev/iscsi* | wc -l` -eq 0",
         command => "/sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
     }
-    exec{'update_iscsi_replacement_timeout':
+    exec{'update_iscsi_database':
         refreshonly => true,
-        command => "iscsiadm -m node -T $iscsi_target_name -o update -n node.session.timeo.replacement_timeout -v $iscsi_replacement_timeout",
-
-    }
-    exec{'update_iscsi_noop_out_interval':
-        refreshonly => true,
-        command => "iscsiadm -m node -T $iscsi_target_name -o update -n node.conn[0].timeo.noop_out_interval -v $iscsi_noop_out_interval",
-
-    }
-    exec{'update_iscsi_noop_out_timeout':
-        refreshonly => true,
-        command => "iscsiadm -m node -T $iscsi_target_name -o update -n node.conn[0].timeo.noop_out_timeout -v $iscsi_noop_out_timeout",
-
+        require => File['/usr/local/sbin/update_iscsi_database.rb'],
+        command => "/usr/local/sbin/update_iscsi_database.rb",
     }
 }
