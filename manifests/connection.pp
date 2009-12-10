@@ -9,7 +9,7 @@ define iscsi::connection(
     $iscsi_noop_out_timeout
 ){
     if ! $iscsi_initiator_name {
-        fail('You must specifiy $iscsi_initiator_name!')
+        fail('You must specify $iscsi_initiator_name!')
     }
     if ! $iscsi_initiator_pwd {
         fail('You must specify $iscsi_initiator_pwd!')
@@ -43,7 +43,6 @@ define iscsi::connection(
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package[iscsi-initiator-utils],
         notify => [
-            Exec[update_iscsi_database],
             Exec[restart_iscsi_daemon_before_discovery],
             Exec[discover_iscsi_targets],
         ],
@@ -62,7 +61,7 @@ define iscsi::connection(
     exec{'restart_iscsi_daemon_before_discovery':
         refreshonly => true,
         before => Exec[discover_iscsi_targets],
-        onlyif => "test `ls -1 /dev/iscsi* | wc -l` -eq 0",
+        unless => "ls /dev/iscsi* > /dev/null 2&>1",
         command => "/etc/init.d/iscsi restart; /bin/true",
     }
     exec{'discover_iscsi_targets':
