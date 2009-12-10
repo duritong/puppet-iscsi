@@ -61,7 +61,7 @@ define iscsi::connection(
     exec{'restart_iscsi_daemon_before_discovery':
         refreshonly => true,
         before => Exec[discover_iscsi_targets],
-        command => "ls /dev/iscsi_* && /bin/true || /etc/init.d/iscsi restart; /bin/true",
+        command => "ls /dev/iscsi_* || /etc/init.d/iscsi restart; /bin/true",
     }
     exec{'discover_iscsi_targets':
         refreshonly => true,
