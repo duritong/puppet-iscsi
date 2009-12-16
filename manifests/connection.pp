@@ -61,12 +61,12 @@ define iscsi::connection(
     exec{'restart_iscsi_daemon_before_discovery':
         refreshonly => true,
         before => Exec[discover_iscsi_targets],
-        command => "ls /dev/iscsi_* || /etc/init.d/iscsi restart; /bin/true",
+        command => "/bin/ls /dev/iscsi_* || /etc/init.d/iscsi restart; /bin/true",
     }
     exec{'discover_iscsi_targets':
         refreshonly => true,
         notify => Service[iscsi],
-        command => "ls /dev/iscsi_* && /bin/true || /sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
+        command => "/bin/ls /dev/iscsi_* && /bin/true || /sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
     }
     exec{'update_iscsi_database':
         refreshonly => true,
