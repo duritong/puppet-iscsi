@@ -41,10 +41,10 @@ define iscsi::connection(
 
     file{'/etc/iscsi/initiatorname.iscsi':
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
-        require => Package[iscsi-initiator-utils],
+        require => Package['iscsi-initiator-utils'],
         notify => [
-            Exec[restart_iscsi_daemon_before_discovery],
-            Exec[discover_iscsi_targets],
+            Exec['restart_iscsi_daemon_before_discovery'],
+            Exec['discover_iscsi_targets'],
         ],
         owner => root, group => 0, mode => 0644;
     }
@@ -52,23 +52,21 @@ define iscsi::connection(
         content => template('iscsi/iscsid.conf.erb'),
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Exec[update_iscsi_database],
-            Exec[restart_iscsi_daemon_before_discovery],
-            Exec[discover_iscsi_targets],
+            Exec['update_iscsi_database'],
+            Exec['restart_iscsi_daemon'],
+            Exec['discover_iscsi_targets'],
         ],
         owner => root, group => 0, mode => 0600;
     }
-    exec{'restart_iscsi_daemon_before_discovery':
+    exec{'restart_iscsi_daemon':
         refreshonly => true,
-        before => Exec[discover_iscsi_targets],
-        #command => "/bin/ls /dev/iscsi_* || logger /etc/init.d/iscsi restart; /bin/true",
-        command => "/usr/bin/logger debug",
+        before => Exec['discover_iscsi_targets'],
+        command => "/bin/ls /dev/iscsi_* || logger /etc/init.d/iscsi restart; /bin/true",
     }
     exec{'discover_iscsi_targets':
         refreshonly => true,
-        notify => Service[iscsi],
-        #command => "/bin/ls /dev/iscsi_* && /bin/true || logger /sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
-        command => "/usr/bin/logger debug",
+        notify => Exec['restart_iscsi_daemon'],
+        command => "/bin/ls /dev/iscsi_* && /bin/true || logger /sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
     }
     exec{'update_iscsi_database':
         refreshonly => true,
