@@ -43,7 +43,7 @@ define iscsi::connection(
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Exec['restart_iscsi_daemon'],
+            Exec['restart_iscsi_daemon_before_discovery'],
             Exec['discover_iscsi_targets'],
         ],
         owner => root, group => 0, mode => 0644;
@@ -53,20 +53,25 @@ define iscsi::connection(
         require => Package['iscsi-initiator-utils'],
         notify => [
             Exec['update_iscsi_database'],
-            Exec['restart_iscsi_daemon'],
+            Exec['restart_iscsi_daemon_before_discovery'],
             Exec['discover_iscsi_targets'],
         ],
         owner => root, group => 0, mode => 0600;
     }
-    exec{'restart_iscsi_daemon':
+    exec{'restart_iscsi_daemon_before_discovery':
         refreshonly => true,
         before => Exec['discover_iscsi_targets'],
-        command => "/bin/ls /dev/iscsi_* || logger /etc/init.d/iscsi restart; /bin/true",
+        command => "/bin/ls /dev/iscsi_* || /etc/init.d/iscsi restart; /bin/true",
+    }
+    exec{'restart_iscsi_daemon_after_discovery':
+        refreshonly => true,
+        require => Exec['discover_iscsi_targets'],
+        command => "/bin/ls /dev/iscsi_* || /etc/init.d/iscsi restart; /bin/true",
     }
     exec{'discover_iscsi_targets':
         refreshonly => true,
-        notify => Exec['restart_iscsi_daemon'],
-        command => "/bin/ls /dev/iscsi_* && /bin/true || logger /sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
+        notify => Exec['restart_iscsi_daemon_after_discovery'],
+        command => "/bin/ls /dev/iscsi_* && /bin/true || /sbin/iscsiadm -m discovery -t sendtargets -p $iscsi_target_ip",
     }
     exec{'update_iscsi_database':
         refreshonly => true,
