@@ -23,18 +23,18 @@ class iscsi {
         ensure => running,
         enable => true,
         hasstatus => true,
-        require => Package[iscsi-initiator-utils],
+        require => Package['iscsi-initiator-utils'],
     }
     service{'iscsid':
         ensure => running,
         enable => true,
         hasstatus => true,
-        require => Package[iscsi-initiator-utils],
+        require => Package['iscsi-initiator-utils'],
     }
     file{'/etc/init.d/iscsi':
         source => "puppet://$server/iscsi/iscsi.init",
-        require => Package[iscsi-initiator-utils],
-        before => Service[iscsi],
+        require => Package['iscsi-initiator-utils'],
+        before => Service['iscsi'],
         owner => root, group => 0, mode => 0755;
     }
     file{'/lib/udev/getlun.sh':
