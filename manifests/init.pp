@@ -32,7 +32,7 @@ class iscsi {
         require => Package['iscsi-initiator-utils'],
     }
     file{'/lib/udev/get_persistant_iscsi_name.sh':
-        source => "puppet://$server/iscsi/get_persistant_iscsi_name.sh ",
+        source => "puppet://$server/iscsi/get_persistant_iscsi_name.sh",
         owner => root, group => 0, mode => 0755;
     }
     file{'/etc/udev/rules.d/10_persistant_iscsi.rules':
