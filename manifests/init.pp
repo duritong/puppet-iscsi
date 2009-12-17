@@ -31,18 +31,12 @@ class iscsi {
         hasstatus => true,
         require => Package['iscsi-initiator-utils'],
     }
-    file{'/etc/init.d/iscsi':
-        source => "puppet://$server/iscsi/iscsi.init",
-        require => Package['iscsi-initiator-utils'],
-        before => Service['iscsi'],
+    file{'/lib/udev/get_persistant_iscsi_name.sh':
+        source => "puppet://$server/iscsi/get_persistant_iscsi_name.sh ",
         owner => root, group => 0, mode => 0755;
     }
-    file{'/lib/udev/getlun.sh':
-        source => "puppet://$server/iscsi/getlun.sh",
-        owner => root, group => 0, mode => 0755;
-    }
-    file{'/etc/udev/rules.d/10_persistant_scsi.rules':
-        source => "puppet://$server/iscsi/10_persistant_scsi.rules",
+    file{'/etc/udev/rules.d/10_persistant_iscsi.rules':
+        source => "puppet://$server/iscsi/10_persistant_iscsi.rules",
         owner => root, group => 0, mode => 0644;
     }
     file{'/usr/local/sbin/update_iscsi_database.rb':

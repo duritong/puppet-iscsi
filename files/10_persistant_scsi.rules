@@ -1,1 +1,0 @@
-BUS=="scsi", SYSFS{vendor}=="Transtec", SYSFS{model}=="PROVIGO1100-puzz", KERNEL=="sd*", NAME="%k", PROGRAM="/lib/udev/getlun.sh $id", SYMLINK+="iscsi_%c_%n"
