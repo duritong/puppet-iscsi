@@ -43,7 +43,7 @@ define iscsi::connection(
         content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
         require => Package['iscsi-initiator-utils'],
         notify => [
-            Exec['restart_iscsi_daemon_before_discovery'],
+            Exec['restart_iscsi_daemon'],
             Exec['discover_iscsi_targets'],
         ],
         owner => root, group => 0, mode => 0644;
