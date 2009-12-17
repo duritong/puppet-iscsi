@@ -15,8 +15,8 @@ class iscsi {
     package{'iscsi-initiator-utils':
         ensure => present,
         require => [
-            File['/lib/udev/getlun.sh'], 
-            File['/etc/udev/rules.d/10_persistant_scsi.rules'], 
+            File['/lib/udev/get_persistant_iscsi_name.sh'], 
+            File['/etc/udev/rules.d/10_persistant_iscsi.rules'], 
         ],
     }
     service{'iscsi':
