@@ -8,6 +8,8 @@ define iscsi::connection(
     $iscsi_noop_out_interval,
     $iscsi_noop_out_timeout
 ){
+    include iscsi
+
     if ! $iscsi_initiator_name {
         fail('You must specify $iscsi_initiator_name!')
     }
