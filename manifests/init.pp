@@ -32,15 +32,15 @@ class iscsi {
     require => Package['iscsi-initiator-utils'],
   }
   file{'/lib/udev/get_persistant_iscsi_name.sh':
-    source => "puppet://$server/iscsi/get_persistant_iscsi_name.sh",
+    source => "puppet:///modules/iscsi/get_persistant_iscsi_name.sh",
     owner => root, group => 0, mode => 0755;
   }
   file{'/etc/udev/rules.d/10_persistant_iscsi.rules':
-    source => "puppet://$server/iscsi/10_persistant_iscsi.rules",
+    source => "puppet:///modules/iscsi/10_persistant_iscsi.rules",
     owner => root, group => 0, mode => 0644;
   }
   file{'/usr/local/sbin/update_iscsi_database.rb':
-    source => "puppet://$server/iscsi/update_iscsi_database.rb",
+    source => "puppet:///modules/iscsi/update_iscsi_database.rb",
     owner => root, group => 0, mode => 0755;
   }
 }
