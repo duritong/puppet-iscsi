@@ -9,7 +9,9 @@ class iscsi::disable {
     hasstatus => true,
     require => Package['iscsi-initiator-utils'],
   }
-  file{['/lib/udev/get_persistant_iscsi_name.sh',
+  file{['/etc/iscsi/iscsid.conf',
+        '/etc/iscsi/initiatorname.iscsi',
+        '/lib/udev/get_persistant_iscsi_name.sh',
         '/etc/udev/rules.d/10_persistant_iscsi.rules',
         '/usr/local/sbin/update_iscsi_database.rb']:
     ensure => absent,
