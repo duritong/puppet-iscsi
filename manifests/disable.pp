@@ -15,5 +15,6 @@ class iscsi::disable {
         '/etc/udev/rules.d/10_persistant_iscsi.rules',
         '/usr/local/sbin/update_iscsi_database.rb']:
     ensure => absent,
+    require => Service['iscsi','iscsid'],
   }
 }
