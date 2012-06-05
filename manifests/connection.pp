@@ -42,7 +42,7 @@ define iscsi::connection(
   }
 
   file{'/etc/iscsi/initiatorname.iscsi':
-    content => "InitiatorName=$iscsi_initiator_name\nInitiatorAlias=$hostname\n",
+    content => "InitiatorName=${iscsi_initiator_name}\nInitiatorAlias=${::hostname}\n",
     require => Package['iscsi-initiator-utils'],
     notify => [
       Exec['restart_iscsi_daemon_before_discovery'],
