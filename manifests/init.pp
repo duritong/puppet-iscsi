@@ -11,36 +11,42 @@
 # the Free Software Foundation.
 #
 
+# Manage default iscsi stuff
 class iscsi {
   package{'iscsi-initiator-utils':
-    ensure => present,
+    ensure  => installed,
     require => [
-      File['/lib/udev/get_persistant_iscsi_name.sh'], 
-      File['/etc/udev/rules.d/10_persistant_iscsi.rules'], 
+      File['/lib/udev/get_persistant_iscsi_name.sh'],
+      File['/etc/udev/rules.d/10_persistant_iscsi.rules'],
     ],
   }
-  service{'iscsi':
-    ensure => running,
-    enable => true,
-    hasstatus => true,
-    require => Package['iscsi-initiator-utils'],
+  service{
+    'iscsi':
+      ensure    => running,
+      enable    => true,
+      hasstatus => true,
+      require   => Package['iscsi-initiator-utils'];
+    'iscsid':
+      ensure    => running,
+      enable    => true,
+      hasstatus => true,
+      require   => Package['iscsi-initiator-utils'];
   }
-  service{'iscsid':
-    ensure => running,
-    enable => true,
-    hasstatus => true,
-    require => Package['iscsi-initiator-utils'],
-  }
-  file{'/lib/udev/get_persistant_iscsi_name.sh':
-    source => "puppet:///modules/iscsi/get_persistant_iscsi_name.sh",
-    owner => root, group => 0, mode => 0755;
-  }
-  file{'/etc/udev/rules.d/10_persistant_iscsi.rules':
-    source => "puppet:///modules/iscsi/10_persistant_iscsi.rules",
-    owner => root, group => 0, mode => 0644;
-  }
-  file{'/usr/local/sbin/update_iscsi_database.rb':
-    source => "puppet:///modules/iscsi/update_iscsi_database.rb",
-    owner => root, group => 0, mode => 0755;
+  file{
+    '/lib/udev/get_persistant_iscsi_name.sh':
+      source => 'puppet:///modules/iscsi/get_persistant_iscsi_name.sh',
+      owner  => root,
+      group  => 0,
+      mode   => '0755';
+    '/etc/udev/rules.d/10_persistant_iscsi.rules':
+      source => 'puppet:///modules/iscsi/10_persistant_iscsi.rules',
+      owner  => root,
+      group  => 0,
+      mode   => '0644';
+    '/usr/local/sbin/update_iscsi_database.rb':
+      source => 'puppet:///modules/iscsi/update_iscsi_database.rb',
+      owner  => root,
+      group  => 0,
+      mode   => '0755';
   }
 }
